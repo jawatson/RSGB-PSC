@@ -1,4 +1,29 @@
 """
+MIT License
+
+Copyright (c) 2019 James Watson
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+"""
+
+
+"""
 Short script to produce Box plots from a difference file for the
 sub-groups identified by the ITU P.1148;
 
@@ -127,7 +152,7 @@ if len(sys.argv) not in (2, 3):
 
 do_mode_analysis = True if len(sys.argv)==3 else False
 
-df = pd.read_csv(sys.argv[1], na_values=' (no data)')
+df = pd.read_csv(sys.argv[1], na_values='NO_DATA')
 df.columns = ["id", "tx", "rx", "freq", "tx_lat", "tx_lng", "rx_lat", "rx_lng", "distance", "ssn", "year", "month", "er_0100", "er_0200", "er_0300", "er_0400", "er_0500", "er_0600", "er_0700", "er_0800", "er_0900", "er_1000", "er_1100", "er_1200", "er_1300", "er_1400", "er_1500", "er_1600", "er_1700", "er_1800", "er_1900", "er_2000", "er_2100", "er_2200", "er_2300", "er_2400"]
 
 df['tx_lat'] = df['tx_lat'].apply(clean_lat)
@@ -147,7 +172,6 @@ mid_points_df = df.apply (lambda row: midPoint (row),axis=1)
 df = pd.concat([df, mid_points_df], axis=1)
 
 df.to_csv('p1148.csv')
-
 str_buf = []
 str_buf.append("{:30s}{:>10s}{:>10s}{:>10s}".format("", "Count", "Mean", "SD"))
 
@@ -193,7 +217,10 @@ plt.clf()
 
 str_buf.append("\nDistance (km):")
 for g,s in zip(groups, box_data):
-    str_buf.append("{:>5d} \u2264 d < {:<18d}{:>10d}{:>10.2f}{:>10.2f}".format(g[0], g[1], len(s), np.mean(s), np.std(s)))
+    if len(s):
+        str_buf.append("{:>5d} \u2264 d < {:<18d}{:>10d}{:>10.2f}{:>10.2f}".format(g[0], g[1], len(s), np.mean(s), np.std(s)))
+    else:
+        str_buf.append("{:>5d} \u2264 d < {:<18d}{:>10d}{:>10s}{:>10s}".format(g[0], g[1], len(s), '---', '---'))
 
 ##################################
 # GEO LATITUDE
@@ -211,6 +238,7 @@ plt.ylabel('Residual (dB)')
 plt.tight_layout()
 plt.savefig('geolat.png')
 plt.clf()
+
 
 str_buf.append("\nGeomagnetic latitude (degrees) at path midpoint:")
 for g,s in zip(groups, box_data):
