@@ -92,6 +92,7 @@ def run_noise_predictions(tx_lat, tx_lng, traffic, noise_level, path_ssn, path_m
         #print(predictions)
         meta = {}
         meta['location'] = zone['location']
+        meta['path'] = zone['path']
         prediction = {'meta':meta,'predictions':predictions}
         predictions_list.append(prediction)
     return predictions_list
@@ -225,16 +226,16 @@ def run_p2p_prediction(tx_lat, tx_lng, rx_lat, rx_lng, path_ssn,
 
 if __name__ == "__main__":
     path_ssn = 3
-    traffic = (500, 0) # A tuple of (bandwidth, SNRr)
+    traffic = (3000, 15) # A tuple of (bandwidth, SNRr)
     path_month = 3
     path_year = 2019
-    noise_level = 'RESIDENTIAL'
+    noise_level = 'RURAL'
     data_path = "/home/jwatson/develop/proppy/flask/data/"
     json_data = run_noise_predictions(45.0, 1.5, traffic, noise_level, path_ssn, path_month, path_year, data_path)
 
     out_buf = []    #print(json_data)
     for location in json_data:
-        out_buf.append("\n{:s}".format(location['meta']['location']))
+        out_buf.append("\n{:s} ({:s})".format(location['meta']['location'], location['meta']['path']))
         for idx, freq in enumerate(sorted(location['predictions'].keys(), key=float)):
             utc = list(range(0,24))
             fam = location['predictions'][freq]['FaM']
@@ -245,6 +246,6 @@ if __name__ == "__main__":
             out_buf.append(("{:>6s}  FamT" + (" {: >6s}")*24).format(freq, *famt))
             out_buf.append(("{:>6s}   FaM" + (" {: >6s}")*24).format(freq, *fam))
             out_buf.append(("{:>6s} delta" + (" {: >6.2f}")*24).format(freq, *delta))
-    with open('noise.txt', 'w') as out_file:
+    with open('noise_'+noise_level+'.txt', 'w') as out_file:
         out_file.write("{:s}\n".format('\n'.join(out_buf)))
     
