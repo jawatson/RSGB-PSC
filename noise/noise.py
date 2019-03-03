@@ -86,7 +86,7 @@ def run_noise_predictions(tx_lat, tx_lng, traffic, noise_level, path_ssn, path_m
                 report_format=['RPT_NOISESOURCES', 'RPT_NOISETOTAL'],
                 path_month=path_month,
                 path_year=path_year,
-                report_dict_keys=['FaM', 'FamT'],
+                report_dict_keys=['FaM', 'FamT', 'FaA', 'FaG'],
                 data_path=data_path,
                 zeroMidnight=True)
         #print(predictions)
@@ -229,7 +229,7 @@ if __name__ == "__main__":
     traffic = (3000, 15) # A tuple of (bandwidth, SNRr)
     path_month = 3
     path_year = 2019
-    noise_level = 'RURAL'
+    noise_level = 'RESIDENTIAL'
     data_path = "/home/jwatson/develop/proppy/flask/data/"
     json_data = run_noise_predictions(45.0, 1.5, traffic, noise_level, path_ssn, path_month, path_year, data_path)
 
@@ -238,13 +238,17 @@ if __name__ == "__main__":
         out_buf.append("\n{:s} ({:s})".format(location['meta']['location'], location['meta']['path']))
         for idx, freq in enumerate(sorted(location['predictions'].keys(), key=float)):
             utc = list(range(0,24))
+            faa = location['predictions'][freq]['FaA']
             fam = location['predictions'][freq]['FaM']
+            fag = location['predictions'][freq]['FaG']
             famt = location['predictions'][freq]['FamT']
             delta = [float(a) - float(b) for a, b in zip(famt, fam)]
             out_buf.append("-"*180)
             out_buf.append((" Freq.   UTC" + (" {: >6d}")*24).format(*utc))
             out_buf.append(("{:>6s}  FamT" + (" {: >6s}")*24).format(freq, *famt))
             out_buf.append(("{:>6s}   FaM" + (" {: >6s}")*24).format(freq, *fam))
+            out_buf.append(("{:>6s}   FaA" + (" {: >6s}")*24).format(freq, *faa))
+            out_buf.append(("{:>6s}   FaG" + (" {: >6s}")*24).format(freq, *fag))
             out_buf.append(("{:>6s} delta" + (" {: >6.2f}")*24).format(freq, *delta))
     with open('noise_'+noise_level+'.txt', 'w') as out_file:
         out_file.write("{:s}\n".format('\n'.join(out_buf)))
